@@ -1,6 +1,6 @@
 # Docker Registry On Core
 
-This is an example of seting up a private [skydns][SkyDNS] and a private [docker registry][Docker-Registry] on a [CoreOS][using-coreos] with VirtualBox and Vagrant.
+An example of setting up a private [skydns][SkyDNS] and [docker registry][Docker-Registry] on [CoreOS][using-coreos] with VirtualBox and Vagrant.
 
 ## Streamlined setup
 
@@ -11,7 +11,7 @@ This is an example of seting up a private [skydns][SkyDNS] and a private [docker
 
 2) Clone this project and get system up
 
-	git clone https://github.com/xuwang/docker-registry.git
+	git clone https://github.com/xuwang/coreos-docker-registry.git
 	cd docker-registry
 	vagrant up
 
