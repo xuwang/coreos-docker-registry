@@ -119,6 +119,13 @@ Vagrant.configure("2") do |config|
         :shell, \
         :inline => "echo -e 'Host #{ip_base}.*\n  StrictHostKeyChecking no\n  ForwardAgent yes' > .ssh/config; chmod 600 .ssh/config", \
         :privileged => false
+
+        
+      # Make self-signed certs truesed in vbox for https://index.docker.local and https://registery.docker.local
+      TEST_ROOT_CA_PATH = File.join(File.dirname(__FILE__), "registry-conf/nginx/certs/generate/rootCA.pem")
+      config.vm.provision :file, :source => "#{TEST_ROOT_CA_PATH}", :destination => "/tmp/XXX-Dockerage.pem"
+      config.vm.provision :shell, :inline => "cd /etc/ssl/certs && mv /tmp/XXX-Dockerage.pem . && update-ca-certificates", :privileged => true
+        
     end
   end
 end
