@@ -1,0 +1,13 @@
+#!/usr/bin/bash 
+
+if [ "$#" -le 0 ]; then 
+	echo "Usage $0 <start|stop|destroy|status>" 
+	 exit 1 
+fi
+
+for s in `ls *.service`; do
+	fleetctl $* $s 
+done
+
+echo $*  | grep "destroy" > /dev/null
+[ $? -eq 0 ] &&  ( echo "Reload systemd daemon:" && sudo systemctl daemon-reload )

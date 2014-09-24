@@ -1,0 +1,16 @@
+[Unit]
+Description=Pull Docker Registry Images
+Requires=docker.service
+After=docker.service
+
+[Service]
+# Pulling a docker images may take forever
+TimeoutStartSec=0
+Type=oneshot
+RemainAfterExit=true
+ExecStart=/usr/bin/bash -c \
+ docker pull dockerfile/redis:latest ; \
+ docker pull registry:0.8.1
+                            
+[Install]
+WantedBy=multi-user.target
