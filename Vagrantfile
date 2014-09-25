@@ -109,8 +109,9 @@ Vagrant.configure("2") do |config|
       # This is not very reliable, at least on MacOS X, droping mount after sleep/wakeup
       config.vm.synced_folder ".", "/home/core/share", id: "core", :nfs => true, :mount_options => ['nolock,vers=3,udp']
       
-      # Make self-signed certs truesed in vbox for https://index.docker.local and https://registery.docker.local
-      # this should be done before docker.service so it can pick up the testing rootCA
+      # The demo docker registry is using a self-signed certs for https://registery.docker.local.
+      # To make the self-signed certs truesed for clients in vbox, update the system bundled certs with the rootCA.
+      # This should be done before docker.service starts so it can pick up the testing rootCA.
       TEST_ROOT_CA_PATH = File.join(File.dirname(__FILE__), "registry-conf/nginx/certs/generate/rootCA.pem")
       config.vm.provision :file, :source => "#{TEST_ROOT_CA_PATH}", :destination => "/tmp/XXX-Dockerage.pem"
       config.vm.provision :shell, :inline => "cd /etc/ssl/certs && mv /tmp/XXX-Dockerage.pem . && update-ca-certificates", :privileged => true
