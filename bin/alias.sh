@@ -14,6 +14,7 @@ alias killdk="dk rm -f $(docker ps -qa)"
 
 alias sd="sudo systemctl"
 alias sdl="sd list-units"
+alias sds="sd status"
 alias sdcat="sd cat"
 
 alias cci="sudo coreos-cloudinit --from-file"
