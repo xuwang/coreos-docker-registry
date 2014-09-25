@@ -1,21 +1,19 @@
 [Unit]
 Description=Docker Registry
-Requires=registry-pull.service
-After=registry-pull.service
+Requires=docker.service
+After=docker.service
 
 [Service]
 EnvironmentFile=/etc/environment
 EnvironmentFile=/var/lib/skydns/config
-ExecStartPre=-/usr/bin/docker rm -f %n
-ExecStartPre=/usr/bin/etcdctl set /skydns/${DOMAIN_PATH}/service/registry '{"host":"${COREOS_PUBLIC_IPV4}"}
-ExecStart=/usr/bin/docker run --rm --name %n -p 5000:5000 -e SETTINGS_FLAVOR=prod  \
+TimeoutStartSec=10min
+ExecStartPre=/bin/sh -c "docker history registry:latest >/dev/null || docker pull registry:latest"
+ExecStartPre=/usr/bin/etcdctl set /skydns/${DOMAIN_PATH}/service/registry '{"host":"${COREOS_PRIVATE_IPV4}"}
+ExecStart=/usr/bin/docker run --rm --name %n -p ${COREOS_PRIVATE_IPV4}:5050:5000 -e SETTINGS_FLAVOR=prod  \
         -v /home/core/share/data:/data \
         -v /home/core/share/registry-conf/registry:/registry-conf \
         -e DOCKER_REGISTRY_CONFIG=/registry-conf/config.yml \
-        registry:0.8.1
+        registry:latest
 ExecStopPost=/usr/bin/etcdctl rm /skydns/${DOMAIN_PATH}/service/registry
 RestartSec=1
 Restart=always
-
-[X-Fleet]
-MachineOf=registry-pull.service
