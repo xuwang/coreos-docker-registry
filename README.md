@@ -7,19 +7,17 @@ An example of setting up a private [skydns][SkyDNS] and [docker registry][Docker
 * [VirtualBox][virtualbox] 4.3.10 or greater.
 * [Vagrant][vagrant] 1.6 or greater.
 
-### Clone this project and get system up
+### Clone this project and get system up and login
 
 	git clone https://github.com/xuwang/coreos-docker-registry.git
 	cd docker-registry
 	vagrant up
-
-### Login to the coreos vm and start the private docker registry
-
-	vagrant ssh
-	cd share/units
-	./all start			# start all related service units
-	./all status     	# check units status
-	ping registry.service    # see if the service is registed
+    vagrant ssh
+	ping -c 2 registry.service    # see if the service is registed
+    PING registry.service.docker.local (172.17.8.101) 56(84) bytes of data.
+    64 bytes from 172.17.8.101: icmp_seq=1 ttl=64 time=0.094 ms
+    64 bytes from 172.17.8.101: icmp_seq=2 ttl=64 time=0.032 ms
+    ...
 
 ### Push and pull images from the private docker registry
 
