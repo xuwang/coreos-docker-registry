@@ -12,12 +12,16 @@ An example of setting up a private [skydns][SkyDNS] and [docker registry][Docker
 	git clone https://github.com/xuwang/coreos-docker-registry.git
 	cd docker-registry
 	vagrant up
-    vagrant ssh
-	ping -c 2 registry.service    # see if the service is registed
-    PING registry.service.docker.local (172.17.8.101) 56(84) bytes of data.
-    64 bytes from 172.17.8.101: icmp_seq=1 ttl=64 time=0.094 ms
-    64 bytes from 172.17.8.101: icmp_seq=2 ttl=64 time=0.032 ms
-    ...
+	vagrant ssh
+
+It may take a while to pull the registry docker, check it by:
+	
+	systemctl status registry.service
+
+When it's green, try:
+	
+	curl http://registry.service:5000
+	...
 
 ### Push and pull images from the private docker registry
 
@@ -27,6 +31,8 @@ An example of setting up a private [skydns][SkyDNS] and [docker registry][Docker
 	docker push  $myscratch
 	docker search $myscratch
 	docker rmi $myscratch
+	docker pull $myscratch
+        docker images
 
 ### Clean it up
 
