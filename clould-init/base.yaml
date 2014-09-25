@@ -31,13 +31,6 @@ coreos:
               WantedBy=sockets.target
 
 write_files:
-  - path: /etc/resolv.conf
-    permissions: 0644
-    owner: root
-    content: |
-      domain docker.local
-      nameserver $private_ipv4
-      nameserver 8.8.8.8
   - path: /etc/profile.d/alias.sh
     content: |
         alias lal="ls -al"
