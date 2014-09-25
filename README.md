@@ -1,4 +1,4 @@
-# Docker Registry On Core
+# Docker Registry With Basic Auth On CoreOS
 
 An example of setting up a private [skydns][SkyDNS] and [docker registry][Docker-Registry] on [CoreOS][using-coreos] with VirtualBox and Vagrant.
 
@@ -19,16 +19,41 @@ An example of setting up a private [skydns][SkyDNS] and [docker registry][Docker
 	cd share/units
 	./all start			# start all related service units
 	./all status     	# check units status
-	ping registry.service    # see if the service is registed
+	ping registry.docker.local    # see if the service is registed
 
 ### Push and pull images from the private docker registry
 
 	docker pull scratch
-	myscratch='registry.service:5000/scratch'
+	myscratch='registry.docker.local/test/scratch'
 	docker tag scratch:latest $myscratch
 	docker push  $myscratch
-	docker search $myscratch
-	docker rmi $myscratch
+    
+Well, with docker 1.2.0, it will fail and put out some nonsense:
+
+    The push refers to a repository [registry.docker.local/test/scratch] (len: 1)
+    Sending image list
+
+Try pull the image, the docker tells you what's the problem:
+ 
+    Pulling repository registry.docker.local/test/scratch
+    2014/09/24 23:49:38 Authentication is required.
+    
+Do login and try again:
+
+	docker login https://registry.docker.local
+    Username: test
+    Password: test
+    Email:
+    Login Succeeded
+    
+	docker push  $myscratch
+    The push refers to a repository [registry.docker.local/test/scratch] (len: 1)
+    Sending image list
+    Pushing repository registry.docker.local/test/scratch (1 tags)
+    Image 511136ea3c5a already pushed, skipping
+    Pushing tag for rev [511136ea3c5a] on {https://registry.docker.local/v1/repositories/test/scratch/tags/latest}
+    
+Note: docker (1.2.0) search is not working at all with basic auth, push is partially working :-()
 
 ### Clean it up
 
