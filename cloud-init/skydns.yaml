@@ -8,7 +8,6 @@ coreos:
         # generate a new token for each unique cluster from https://discovery.etcd.io/new
         # WARNING: replace each time you 'vagrant destroy'
         #discovery: https://discovery.etcd.io/<token>
-        discovery: https://discovery.etcd.io/7a961382d682838b25d3ab3d587c6ecf
     fleet:
         public-ip: $private_ipv4
     units:
