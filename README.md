@@ -53,8 +53,11 @@ Do login and try again:
     Image 511136ea3c5a already pushed, skipping
     Pushing tag for rev [511136ea3c5a] on {https://registry.docker.local/v1/repositories/test/scratch/tags/latest}
     
-Note: docker (1.2.0) search is not working at all with basic auth, push is partially working :-()
+_Note:_ docker (1.2.0) search is not working at all with basic auth, push is partially working :-()
 
+Use the Docker Registry API call for search:
+
+        curl --user test:test -s -XGET "https://registry.docker.local/v1/search?q=test
 ### Clean it up
 
 	exit # the coreos vm
