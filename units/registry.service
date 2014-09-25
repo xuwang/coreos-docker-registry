@@ -2,6 +2,8 @@
 Description=Docker Registry
 Requires=docker.service
 After=docker.service
+Requires=skydns.service
+After=skydns.service
 
 [Service]
 EnvironmentFile=/etc/environment
