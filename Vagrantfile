@@ -59,7 +59,7 @@ Vagrant.configure("2") do |config|
   end
 
   (1..$num_instances).each do |i|
-    config.vm.define vm_name = "core%02d" % i do |config|
+    config.vm.define vm_name = "registry-%02d" % i do |config|
       config.vm.hostname = vm_name
       
 
@@ -109,22 +109,25 @@ Vagrant.configure("2") do |config|
       # This is not very reliable, at least on MacOS X, droping mount after sleep/wakeup
       config.vm.synced_folder ".", "/home/core/share", id: "core", :nfs => true, :mount_options => ['nolock,vers=3,udp']
       
-      if File.exist?(CLOUD_CONFIG_PATH)
-        config.vm.provision :file, :source => "#{CLOUD_CONFIG_PATH}", :destination => "/tmp/vagrantfile-user-data"
-        config.vm.provision :shell, :inline => "mv /tmp/vagrantfile-user-data /var/lib/coreos-vagrant/", :privileged => true
-      end 
-      
+      # Make self-signed certs truesed in vbox for https://index.docker.local and https://registery.docker.local
+      # this should be done before docker.service so it can pick up the testing rootCA
+      TEST_ROOT_CA_PATH = File.join(File.dirname(__FILE__), "registry-conf/nginx/certs/generate/rootCA.pem")
+      config.vm.provision :file, :source => "#{TEST_ROOT_CA_PATH}", :destination => "/tmp/XXX-Dockerage.pem"
+      config.vm.provision :shell, :inline => "cd /etc/ssl/certs && mv /tmp/XXX-Dockerage.pem . && update-ca-certificates", :privileged => true
+
       # Uncomment below to enable ssh-agent forwarding in coreos-vagrant VM.
       config.vm.provision \
         :shell, \
         :inline => "echo -e 'Host #{ip_base}.*\n  StrictHostKeyChecking no\n  ForwardAgent yes' > .ssh/config; chmod 600 .ssh/config", \
         :privileged => false
 
-        
-      # Make self-signed certs truesed in vbox for https://index.docker.local and https://registery.docker.local
-      TEST_ROOT_CA_PATH = File.join(File.dirname(__FILE__), "registry-conf/nginx/certs/generate/rootCA.pem")
-      config.vm.provision :file, :source => "#{TEST_ROOT_CA_PATH}", :destination => "/tmp/XXX-Dockerage.pem"
-      config.vm.provision :shell, :inline => "cd /etc/ssl/certs && mv /tmp/XXX-Dockerage.pem . && update-ca-certificates", :privileged => true
+      if File.exist?(CLOUD_CONFIG_PATH)
+        config.vm.provision :file, :source => "#{CLOUD_CONFIG_PATH}", :destination => "/tmp/vagrantfile-user-data"
+        config.vm.provision :shell, :inline => "mv /tmp/vagrantfile-user-data /var/lib/coreos-vagrant/", :privileged => true
+      end 
+
+      # Start registry related units
+      config.vm.provision :shell, :inline => "cd share/units && ./all start", :privileged => true
         
     end
   end

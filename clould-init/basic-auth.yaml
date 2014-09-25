@@ -127,9 +127,6 @@ coreos:
               ExecStopPost=/usr/bin/etcdctl rm /skydns/${DOMAIN_PATH}/registry
               RestartSec=3
               Restart=always
-              
-              [X-Fleet]
-              MachineOf=registry.service
 write_files:
   - path: /var/lib/skydns/config
     content: |
@@ -158,6 +155,7 @@ write_files:
         alias killdk="dk rm -f $(docker ps -qa)"
         alias sd="sudo systemctl"
         alias sdl="sd list-units"
+        alias sds="sd status"
         alias sdcat="sd cat"
         alias cci="sudo coreos-cloudinit --from-file"
         alias j="journalctl"

@@ -22,3 +22,5 @@ done
 # systemd may still use catched staled units
 echo $*  | grep "destroy" > /dev/null
 [ $? -eq 0 ] &&  ( echo "Reload systemd daemon:" && sudo systemctl daemon-reload )
+
+exit 0
