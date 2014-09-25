@@ -40,7 +40,7 @@ coreos:
               [Install] 
               WantedBy=sockets.target
 
-        - name: skydns.install.service
+        - name: skydns-install.service
           command: start
           content: |
               [Unit]
@@ -58,9 +58,9 @@ coreos:
           content: |
               [Unit]
               Description=skydns
-              Requires=skydns.install.service
+              Requires=skydns-install.service
               Wants=etcd.service
-              After=skydns.install.service
+              After=skydns-install.service
               After=etcd.service
             
               [Service]  
