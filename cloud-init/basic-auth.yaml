@@ -79,7 +79,7 @@ coreos:
               ExecStart=/var/lib/skydns/bin/skydns -verbose=true
               ExecStopPost=-/usr/bin/etcdctl rm /skydns/config
               ExecStopPost=-/usr/bin/etcdctl rm /skydns/${DOMAIN_PATH}/dns/ns
-              ExecStopPost=-/usr/bin/etcdctl rm /skydns/${DOMAIN_PATH/%H
+              ExecStopPost=-/usr/bin/etcdctl rm /skydns/${DOMAIN_PATH}/%H
               
               [Install]  
               WantedBy=multi-user.target
