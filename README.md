@@ -73,7 +73,7 @@ Do login and try again:
     Pushing tag for rev [511136ea3c5a] on {https://registry.docker.local/v1/repositories/test/scratch/tags/latest}
 
 _Note:_ docker (1.2.0) search is not working at all with basic auth, push is not helping when your are not logged in.  
-Also, use the full the url `https://registry.docker.local` for docker login/logout.
+Also, use the full url `https://registry.docker.local` for docker login/logout.
 
 Use the Docker Registry API call for search:
 
