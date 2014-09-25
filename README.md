@@ -1,4 +1,4 @@
-# Docker Registry On Core
+# Docker Registry On CoreOS
 
 An example of setting up a private [skydns][SkyDNS] and [docker registry][Docker-Registry] on [CoreOS][using-coreos] with VirtualBox and Vagrant.
 
