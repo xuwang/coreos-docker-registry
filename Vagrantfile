@@ -7,6 +7,7 @@ Vagrant.require_version ">= 1.6.0"
 
 CLOUD_CONFIG_PATH = File.join(File.dirname(__FILE__), "user-data")
 CONFIG = File.join(File.dirname(__FILE__), "config.rb")
+TEST_ROOT_CA_PATH = File.join(File.dirname(__FILE__), "registry-conf/nginx/certs/generate/rootCA.pem")
 
 # Defaults for config options defined in CONFIG
 $num_instances = 1
@@ -112,14 +113,13 @@ Vagrant.configure("2") do |config|
       # The demo docker registry is using a self-signed certs for https://registery.docker.local.
       # To make the self-signed certs truesed for clients in vbox, update the system bundled certs with the rootCA.
       # This should be done before docker.service starts so it can pick up the testing rootCA.
-      TEST_ROOT_CA_PATH = File.join(File.dirname(__FILE__), "registry-conf/nginx/certs/generate/rootCA.pem")
       config.vm.provision :file, :source => "#{TEST_ROOT_CA_PATH}", :destination => "/tmp/XXX-Dockerage.pem"
       config.vm.provision :shell, :inline => "cd /etc/ssl/certs && mv /tmp/XXX-Dockerage.pem . && update-ca-certificates", :privileged => true
 
       # Uncomment below to enable ssh-agent forwarding in coreos-vagrant VM.
       config.vm.provision \
         :shell, \
-        :inline => "echo -e 'Host #{ip_base}.*\n  StrictHostKeyChecking no\n  ForwardAgent yes' > .ssh/config; chmod 600 .ssh/config", \
+        :inline => "echo -e 'Host #{ip_base}.* registry*\n  StrictHostKeyChecking no\n  ForwardAgent yes' > .ssh/config; chmod 600 .ssh/config", \
         :privileged => false
 
       if File.exist?(CLOUD_CONFIG_PATH)
@@ -127,9 +127,10 @@ Vagrant.configure("2") do |config|
         config.vm.provision :shell, :inline => "mv /tmp/vagrantfile-user-data /var/lib/coreos-vagrant/", :privileged => true
       end 
 
-      # Start registry related units
-      config.vm.provision :shell, :inline => "cd share/units && ./all start", :privileged => true
-        
+      if i == $num_instances
+        # fleetctl start registry related units, when all machine's up
+        config.vm.provision :shell, :inline => "cd share/units && ./all start", :privileged => true
+      end  
     end
   end
 end
