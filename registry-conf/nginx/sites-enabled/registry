@@ -24,6 +24,18 @@ server {
         proxy_pass http://registry;
     }
     
+    location /v1/repositories/test {
+        auth_basic            "Restricted";
+        auth_basic_user_file  /etc/nginx/certs/test.htpasswd;
+        proxy_pass http://registry;
+    }
+    
+    location /v1/repositories/demo {
+        auth_basic            "Restricted";
+        auth_basic_user_file  /etc/nginx/certs/demo.htpasswd;
+        proxy_pass http://registry;
+    }
+    
     location /_ping {
         auth_basic off;
         proxy_pass http://registry;
