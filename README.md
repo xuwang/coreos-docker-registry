@@ -14,21 +14,35 @@ An example of setting up a private [skydns][SkyDNS] and [docker registry][Docker
 	vagrant up
 	vagrant ssh
 	
-It may take a while to pull the related docker images, have a cup of tea and check the status with
-	
+It may take a while to pull related docker images depending on the network bandwidth.    
+Have a cup of tea, and check the status with:
+
         systemctl status registry*
+Output:
 
-When everything is green:
+    ● registry-proxy.service - Docker Registry Proxy
+       Loaded: loaded (/run/fleet/units/registry-proxy.service; linked-runtime)
+       Active: active (running) since Fri 2014-09-26 05:49:24 UTC; 11s ago
+       ...
 
-	ping -c 2 registry.service    # see if the service is registed
-	PING registry.service.docker.local (172.17.8.101) 56(84) bytes of data.
+    ● registry.service - Docker Registry
+       Loaded: loaded (/run/fleet/units/registry.service; linked-runtime)
+       Active: active (running) since Fri 2014-09-26 05:49:19 UTC; 5s ago
+       ...
+Wait until dots turn green, try:
+
+	ping -c 2 registry.docker.local    # see if the service is registed
+Output:
+
+	PING registry.docker.local (172.17.8.101) 56(84) bytes of data.
 	64 bytes from 172.17.8.101: icmp_seq=1 ttl=64 time=0.094 ms
 	64 bytes from 172.17.8.101: icmp_seq=2 ttl=64 time=0.032 ms
-	...
 
-Check with curl:
+Check if the serviec is protected with curl:
 
 	curl https://registry.docker.local
+Output:
+
 	<html>
 	<head><title>401 Authorization Required</title></head>
 	<body bgcolor="white">
@@ -36,45 +50,58 @@ Check with curl:
 	<hr><center>nginx/1.6.2</center>
 	</body>
 	</html>
+Curl with user credentials:
 
 	curl --user test:test https://registry.docker.local
+Output:
+
 	"docker-registry server (prod) (v0.8.1)"
 
 ### Push and pull images from the private docker registry
+Try pushing scratch to the private registry:
 
 	docker pull scratch
 	myscratch='registry.docker.local/test/scratch'
 	docker tag scratch:latest $myscratch
 	docker push  $myscratch
-    
-Well, with docker 1.2.0, it will fail pushing a image without authantication:
+Output:
 
     The push refers to a repository [registry.docker.local/test/scratch] (len: 1)
     Sending image list
 
+Well, with docker 1.2.0, it fails pushing a image _without_ error warning. 
+
 Try to pull the image, the docker tells you what's the problem:
- 
+
     Pulling repository registry.docker.local/test/scratch
+Output:
+
     2014/09/24 23:49:38 Authentication is required.
-    
 Do login and try again:
 
 	docker login https://registry.docker.local
 	Username: test
 	Password: test
 	Email:
+Output:
+
 	Login Succeeded
+ 
+_Note:_ For docker login/logout, the full url, e.g. _https://registry.docker.local_ is required.  
+
+Push again:
+
+    docker push $myscratch
     
-	docker push  $myscratch
+Output:
+
     The push refers to a repository [registry.docker.local/test/scratch] (len: 1)
     Sending image list
     Pushing repository registry.docker.local/test/scratch (1 tags)
-    Image 511136ea3c5a already pushed, skipping
+    ...
     Pushing tag for rev [511136ea3c5a] on {https://registry.docker.local/v1/repositories/test/scratch/tags/latest}
-
-_Note:_ docker (1.2.0) search is not working at all with basic auth, push is not helping when your are not logged in.  
-Also, use the full url `https://registry.docker.local` for docker login/logout.
-
+    
+Docker (1.2.0) _search_ is not working with basic auth.  
 Use the Docker Registry API call for search:
 
         curl --user test:test -s -XGET "https://registry.docker.local/v1/search?q=test
