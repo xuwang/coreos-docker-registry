@@ -76,13 +76,14 @@ coreos:
               ExecStartPre=/usr/bin/etcdctl set /skydns/${DOMAIN_PATH}/%H '{"host":"$private_ipv4"}'
               # Set skydns configuration in etcd
               ExecStartPre=/usr/bin/etcdctl set /skydns/config ${SKYDNS_CONFIG}
-              ExecStart=/var/lib/skydns/bin/skydns -verbose=true
+              ExecStart=/var/lib/skydns/bin/skydns -verbose=true -addr "$private_ipv4:53"
               ExecStopPost=-/usr/bin/etcdctl rm /skydns/config
               ExecStopPost=-/usr/bin/etcdctl rm /skydns/${DOMAIN_PATH}/dns/ns
               ExecStopPost=-/usr/bin/etcdctl rm /skydns/${DOMAIN_PATH}/%H
               
               [Install]  
               WantedBy=multi-user.target
+
         - name: registry.service
           command: start
           content: |
@@ -132,7 +133,7 @@ write_files:
     content: |
         DOMAIN=docker.local
         DOMAIN_PATH=local/docker
-        SKYDNS_CONFIG='{"domain":"docker.local","dns_addr":"$private_ipv4:53","ttl":3600, "nameservers": ["8.8.8.8:53","8.8.4.4:53"]}'
+        SKYDNS_CONFIG='{"domain":"docker.local","ttl":3600, "nameservers": ["8.8.8.8:53","8.8.4.4:53"]}'
   - path: /etc/resolv.conf
     permissions: 0644
     owner: root

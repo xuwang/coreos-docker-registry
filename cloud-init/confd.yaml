@@ -24,7 +24,7 @@ coreos:
               # Use our own dns, instead of the host's.
               EnvironmentFile=/var/lib/skydns/config
               ExecStart=
-              ExecStart=/usr/bin/docker -d -s=btrfs -r=false -H fd:// --dns=$private_ipv4 --dns-search=${DOMAIN}
+              ExecStart=/usr/bin/docker -d -s=btrfs -r=false -H fd:// --dns=${COREOS_PRIVATE_IPV4} --dns-search=${DOMAIN}
         - name: docker-tcp.socket
           command: start
           enable: true
@@ -52,7 +52,7 @@ coreos:
               ExecStart=-/usr/bin/mkdir -p /var/lib/skydns/bin
               ExecStart=-/usr/bin/curl -L -o /var/lib/skydns/bin/skydns \
                    https://github.com/xuwang/skydns-docker/releases/download/skydns-7025dba3834f/skydns
-              ExecStartPost=/usr/bin/chmod 755 /var/lib/skydns/bin/skydns       
+              ExecStartPost=/usr/bin/chmod 755 /var/lib/skydns/bin/skydns
         - name: skydns.service
           command: start
           content: |
@@ -70,18 +70,20 @@ coreos:
               ReadOnlyDirectories=/etc
               EnvironmentFile=/etc/environment
               EnvironmentFile=/var/lib/skydns/config
+              PermissionsStartOnly=true
               # Set skydns namespace ns=${DOMAIN}
-              ExecStartPre=/usr/bin/etcdctl set /skydns/${DOMAIN_PATH}/dns/ns '{"host":"$private_ipv4"}'
-              ExecStartPre=/usr/bin/etcdctl set /skydns/${DOMAIN_PATH}/%H '{"host":"$private_ipv4"}'
+              ExecStartPre=/usr/bin/etcdctl set /skydns/${DOMAIN_PATH}/dns/ns '{"host":"${COREOS_PRIVATE_IPV4}"}'
+              ExecStartPre=/usr/bin/etcdctl set /skydns/${DOMAIN_PATH}/%H '{"host":"${COREOS_PRIVATE_IPV4}"}'
               # Set skydns configuration in etcd
               ExecStartPre=/usr/bin/etcdctl set /skydns/config ${SKYDNS_CONFIG}
-              ExecStart=/var/lib/skydns/bin/skydns -verbose=true
+              ExecStart=/var/lib/skydns/bin/skydns -verbose=true -addr "${COREOS_PRIVATE_IPV4}:53"
               ExecStopPost=-/usr/bin/etcdctl rm /skydns/config
               ExecStopPost=-/usr/bin/etcdctl rm /skydns/${DOMAIN_PATH}/dns/ns
-              ExecStopPost=-/usr/bin/etcdctl rm /skydns/${DOMAIN_PATH}//%H
+              ExecStopPost=-/usr/bin/etcdctl rm /skydns/${DOMAIN_PATH}/%H
               
               [Install]  
               WantedBy=multi-user.target
+
 
         - name: confd-install.service
           command: start
@@ -96,34 +98,12 @@ coreos:
               ExecStart=-/usr/bin/curl -L -o /var/lib/confd/bin/confd \
                    https://github.com/kelseyhightower/confd/releases/download/v0.5.0/confd-0.5.0-linux-amd64
               ExecStartPost=/usr/bin/chmod 755 /var/lib/confd/bin/confd
-        - name: confd.service
-          command: start
-          content: |
-              [Unit]
-              Description=confd
-              Requires=confd-install.service
-              After=confd-install.service
-              Requires=etcd.service
-              After=etcd.service
-            
-              [Service]  
-              Type=simple
-              Restart=always
-              RestartSec=5
-              ReadOnlyDirectories=/etc
-              EnvironmentFile=/etc/environment
-              ExecStart=/var/lib/confd/bin/confd -verbose=true -node "localhost:4001" -interval=60 \
-                    -prefix="/confd" -confdir /var/lib/confd 
-              
-              [Install]  
-              WantedBy=multi-user.target
-
 write_files:
   - path: /var/lib/skydns/config
     content: |
         DOMAIN=docker.local
         DOMAIN_PATH=local/docker
-        SKYDNS_CONFIG='{"domain":"docker.local","dns_addr":"$private_ipv4:53","ttl":3600, "nameservers": ["8.8.8.8:53","8.8.4.4:53"]}'
+        SKYDNS_CONFIG='{"domain":"docker.local","ttl":3600, "nameservers": ["8.8.8.8:53","8.8.4.4:53"]}'
   - path: /etc/resolv.conf
     permissions: 0644
     owner: root
