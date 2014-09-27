@@ -1,5 +1,5 @@
 upstream registry {
-    server 172.17.8.101:5050;
+    server {{ .confd_prod_service_registry_endpoint }};
 }
 
 server {
