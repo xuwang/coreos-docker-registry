@@ -6,15 +6,24 @@ After=registry.service
 [Service]
 EnvironmentFile=/etc/environment
 EnvironmentFile=/var/lib/skydns/config
+Environment="NGINX_DIR=/home/core/share/registry-conf/nginx"
+Environment="LOG_DIR=/home/core/share/data/log/nginx"
+Environment="CONFD_DIR=/home/core/share/registry-conf/confd"
+# It may take long time to pull the image, set start timeout to 10 min
 TimeoutStartSec=10min
 ExecStartPre=/bin/sh -c "docker history dockerfile/nginx:latest >/dev/null || docker pull dockerfile/nginx:latest"
-ExecStartPre=/usr/bin/etcdctl set /skydns/${DOMAIN_PATH}/registry '{"host":"${COREOS_PUBLIC_IPV4}"}
-ExecStart=/usr/bin/docker run --name %n -p 80:80 -p 443:443 \
-        -v /home/core/share/registry-conf/nginx/sites-enabled:/etc/nginx/sites-enabled \
-        -v /home/core/share/registry-conf/nginx/certs:/etc/nginx/certs \
-        -v /home/core/share/data/log/nginx:/var/log/nginx \
+# Use confd to generate nginx conf for proxy registry.service
+ExecStartPre=/var/lib/confd/bin/confd -onetime -verbose=true -node ${COREOS_PRIVATE_IPV4}:4001 -confdir ${CONFD_DIR}
+# Registering the DNS name
+ExecStartPre=/usr/bin/etcdctl set /skydns/${DOMAIN_PATH}/registry '{"host":"${COREOS_PRIVATE_IPV4}", "port":443}
+ExecStartPre=/usr/bin/bash -c "etcdctl set /skydns/arpa/in-addr/`echo ${COREOS_PRIVATE_IPV4} | sed 's/\./\//g'` '{host: registry.${DOMAIN}}'"
+ExecStart=/usr/bin/docker run --name %n -p 443:443 \
+        -v ${NGINX_DIR}/sites-enabled:/etc/nginx/sites-enabled \
+        -v ${NGINX_DIR}/certs:/etc/nginx/certs \
+        -v ${LOG_DIR}:/var/log/nginx \
         --rm dockerfile/nginx:latest 
 ExecStopPost=/usr/bin/etcdctl rm /skydns/${DOMAIN_PATH}/registry
+    ExecStopPost=/usr/bin/bash -c " etcdctl rm /skydns/arpa/in-addr/`echo ${COREOS_PRIVATE_IPV4} | sed 's/\./\//g'` "
 RestartSec=3
 Restart=always
 
