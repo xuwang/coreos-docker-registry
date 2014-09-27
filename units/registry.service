@@ -8,7 +8,7 @@ After=skydns.service
 [Service]
 EnvironmentFile=/etc/environment
 EnvironmentFile=/var/lib/skydns/config
-TimeoutStartSec=10min
+TimeoutStartSec=20min
 ExecStartPre=/bin/sh -c "docker history registry:latest >/dev/null || docker pull registry:latest"
 ExecStartPre=/usr/bin/etcdctl set /skydns/${DOMAIN_PATH}/service/registry '{"host": "${COREOS_PRIVATE_IPV4}", "port": 5050}'
 ExecStartPre=/usr/bin/etcdctl set /confd/prod/service/registry/endpoint "${COREOS_PRIVATE_IPV4}:5050"
