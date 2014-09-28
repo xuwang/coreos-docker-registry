@@ -15,3 +15,6 @@ ExecStart=/usr/bin/docker run --rm --name nodeapp-%i -p ${COREOS_PRIVATE_IPV4}:%
 ExecStopPost=/usr/bin/etcdctl rm /confd/prod/service/nodeapp/%m_%i
 RestartSec=5
 Restart=always
+
+[X-Fleet]
+X-Conflicts=nodeapp@%i.service
