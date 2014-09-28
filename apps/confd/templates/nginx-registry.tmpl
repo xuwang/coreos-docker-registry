@@ -1,5 +1,7 @@
 upstream registry {
-    server {{ .confd_prod_service_registry_endpoint }};
+    {{ range $server := .confd_prod_service_registry_endpoint }}
+    server {{ $server.Value }};
+    {{ end }}
 }
 
 server {

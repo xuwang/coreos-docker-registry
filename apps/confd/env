@@ -1,0 +1,8 @@
+# env file for confd
+        
+CONFD_CMD=/var/lib/apps/confd/bin/confd
+CONFD_OPTS= --debug \
+        -verbose=true \
+        -interval=10 \
+        -node "127.0.0.1:4001" \
+        -confdir /var/lib/apps/confd

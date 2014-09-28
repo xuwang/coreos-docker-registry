@@ -1,5 +1,7 @@
 upstream registry {
-    server 172.17.8.101:5050;
+    
+    server 172.17.8.101:5000;
+    
 }
 
 server {

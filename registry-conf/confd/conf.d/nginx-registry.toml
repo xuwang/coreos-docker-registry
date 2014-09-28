@@ -1,4 +1,0 @@
-[template]
-src = "nginx-registry.tmpl"
-dest = "/home/core/share/registry-conf/nginx/sites-enabled/registry"
-keys = ["/confd/prod/service/registry/endpoint"]

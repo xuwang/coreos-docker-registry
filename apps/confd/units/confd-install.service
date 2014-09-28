@@ -1,0 +1,13 @@
+[Unit]
+Description=confd installer
+
+[Service]
+Type=oneshot
+RemainAfterExit=true
+ExecStart=-/usr/bin/bash -c "[ -e /var/lib/apps/confd/bin/confd ] || mkdir -p /var/lib/apps/confd/{bin,conf.d,templates}"
+ExecStart=/usr/bin/bash -c "[ -e /var/lib/apps/confd/bin/confd ] || (/usr/bin/curl -L -o /var/lib/apps/confd/bin/confd \
+     https://github.com/kelseyhightower/confd/releases/download/v0.5.0/confd-0.5.0-linux-amd64) "
+ExecStart=/usr/bin/chmod 755 /var/lib/apps/confd/bin/confd
+
+[X-Fleet]
+Global=true

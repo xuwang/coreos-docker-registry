@@ -7,7 +7,7 @@ Vagrant.require_version ">= 1.6.0"
 
 CLOUD_CONFIG_PATH = File.join(File.dirname(__FILE__), "user-data")
 CONFIG = File.join(File.dirname(__FILE__), "config.rb")
-TEST_ROOT_CA_PATH = File.join(File.dirname(__FILE__), "registry-conf/nginx/certs/generate/rootCA.pem")
+TEST_ROOT_CA_PATH = File.join(File.dirname(__FILE__), "apps/nginx/certs/generate/rootCA.pem")
 
 # Defaults for config options defined in CONFIG
 $num_instances = 1
@@ -60,7 +60,7 @@ Vagrant.configure("2") do |config|
   end
 
   (1..$num_instances).each do |i|
-    config.vm.define vm_name = "registry-%02d" % i do |config|
+    config.vm.define vm_name = "apps-%02d" % i do |config|
       config.vm.hostname = vm_name
       
 
