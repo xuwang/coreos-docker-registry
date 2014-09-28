@@ -8,7 +8,7 @@ After=skydns.service
 [Service]
 EnvironmentFile=/etc/environment
 EnvironmentFile=/var/lib/apps/registry/env
-EnvironmentFile=/var/lib/apps/skydns/env
+EnvironmentFile=/var/lib/skydns/env
 TimeoutStartSec=0
 ExecStartPre=/var/lib/apps/bin/dkpull ${DOCKER_IMAGE}
 # Registering the DNS name
@@ -19,6 +19,6 @@ ExecStartPre=/usr/bin/etcdctl set "${CONFD_KEY}/%H" "${COREOS_PRIVATE_IPV4}:${RE
 ExecStart=/usr/bin/sh -c "docker run --rm --name %n ${DOCKER_OPTS} ${DOCKER_IMAGE}"
 # Clean up
 ExecStopPost=/usr/bin/etcdctl rm "${DOMAIN_PATH}/${DNS_PATH}" --with-value '{"host": "${COREOS_PRIVATE_IPV4}"}'
-ExecStopPre=/usr/bin/etcdctl rm "${CONFD_KEY}/%H" --with-value "${COREOS_PRIVATE_IPV4}:${REGISTRY_PORT}"
+ExecStopPost=/usr/bin/etcdctl rm "${CONFD_KEY}/%H" --with-value "${COREOS_PRIVATE_IPV4}:${REGISTRY_PORT}"
 RestartSec=5
 Restart=always

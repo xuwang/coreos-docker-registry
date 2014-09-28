@@ -22,7 +22,7 @@ coreos:
             
               [Service]
               # Use our own dns, instead of the host's.
-              EnvironmentFile=/var/lib/skydns/config
+              EnvironmentFile=/var/lib/skydns/env
               ExecStart=
               ExecStart=/usr/bin/docker -d -s=btrfs -r=false -H fd:// --dns=$private_ipv4 --dns-search=${DOMAIN}
         - name: docker-tcp.socket
@@ -42,19 +42,17 @@ coreos:
 
         - name: skydns-install.service
           command: start
-          content: |[Unit]
+          content: |
+              [Unit]
               Description=SkyDNS Installer
               
               [Service]
               Type=oneshot
               RemainAfterExit=true
-              EnvironmentFile=/etc/environment
               EnvironmentFile=/var/lib/skydns/env
-              ExecStart=-/bin/mkdir -p ${SKYDNS_CMD_PATH}
-              ExecStart=/bin/sh -c "[ -x ${SKYDNS_CMD} ] || (curl -L -o ${SKYDNS_CMD} ${SKYDNS_CMD_REPO} && chmod 755 ${SKYDNS_CMD})"
-              
-              [Install]  
-              WantedBy=multi-user.target        
+              ExecStart=-/bin/mkdir -p ${SKYDNS_PATH}/bin
+              ExecStart=-/bin/cp /var/lib/apps/skydns/env ${SKYDNS_PATH}
+              ExecStart=/bin/sh -c "[ -x ${SKYDNS_CMD} ] || (curl -L -o ${SKYDNS_CMD} ${SKYDNS_CMD_REPO} && chmod 755 ${SKYDNS_CMD})" 
         - name: skydns.service
           command: start
           content: |
@@ -77,11 +75,11 @@ coreos:
               ExecStartPre=/usr/bin/etcdctl set ${DOMAIN_PATH}/%H '{"host":"${COREOS_PRIVATE_IPV4}"}'
               # Set skydns configuration in etcd
               ExecStartPre=/usr/bin/etcdctl set /skydns/config ${SKYDNS_CONFIG}
-              ExecStart=/var/lib/skydns/bin/skydns
+              ExecStart=/bin/sh -c ${SKYDNS_CMD}
               ExecStopPost=-/usr/bin/etcdctl rm /skydns/config
               ExecStopPost=-/usr/bin/etcdctl rm ${DNS_NAMESERVER_PATH} --with-value '{host:${COREOS_PRIVATE_IPV4}}'
               ExecStopPost=-/usr/bin/etcdctl rm ${DOMAIN_PATH}/%H
-              
+
               [Install]  
               WantedBy=multi-user.target
               
@@ -119,14 +117,15 @@ coreos:
               [Install]  
               WantedBy=multi-user.target
 write_files:
-  - path: /var/lib/skydns/config
+  - path: /var/lib/skydns/env
     content: |
-        # this is a unit env file for skydns
-        source /etc/environment
         DOMAIN=docker.local
-        DOMAIN_PATH=local/docker
-        IN_ADDR_PATH=arpa/in-addr/`echo ${COREOS_PRIVATE_IPV4} | sed 's/\./\//g'`
-        SKYDNS_CONFIG='{"domain":"docker.local","ttl":3600, "nameservers": ["8.8.8.8:53","8.8.4.4:53"]}'
+        DOMAIN_PATH=/skydns/local/docker
+        DNS_NAMESERVER_PATH=/skydns/local/docker/dns/ns
+        SKYDNS_CONFIG='{"domain":"docker.local", "dns_addr":"0.0.0.0:53", "ttl":3600, "nameservers": ["8.8.8.8:53","8.8.4.4:53"]}'
+        SKYDNS_CMD_REPO=https://github.com/xuwang/skydns-docker/releases/download/skydns-7025dba3834f/skydns
+        SKYDNS_PATH=/var/lib/skydns
+        SKYDNS_CMD=/var/lib/skydns/bin/skydns
   - path: /etc/resolv.conf
     permissions: 0644
     owner: root
