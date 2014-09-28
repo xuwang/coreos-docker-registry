@@ -107,6 +107,8 @@ Vagrant.configure("2") do |config|
 
       # enable NFS for sharing the host machine into the coreos-vagrant VM.
       config.vm.synced_folder ".", "/home/core/share", id: "core", :nfs => true, :mount_options => ['nolock,vers=3,udp']
+      config.vm.synced_folder "./apps", "/var/lib/apps", id: "root", :nfs => true, :mount_options => ['nolock,vers=3,udp']
+      config.vm.synced_folder "./data", "/var/lib/apps-data", id: "root", :nfs => true, :mount_options => ['nolock,vers=3,udp']
       
       # The demo docker registry is using a self-signed certs for https://registery.docker.local.
       # To make the self-signed certs truesed for clients in vbox, update the system bundled certs with the rootCA.
@@ -125,12 +127,9 @@ Vagrant.configure("2") do |config|
         config.vm.provision :shell, :inline => "mv /tmp/vagrantfile-user-data /var/lib/coreos-vagrant/", :privileged => true
       end 
 
-      # symlink apps and apps-data to /var/lib 
-      config.vm.provision :shell, :inline => "ln -sf /home/core/share/apps /var/lib/apps && ln -sf /home/core/share/data /var/lib/apps-data", :privileged => true
-
       if i == $num_instances
         # start all initial feet units, do it only on last node
-        config.vm.provision :shell, :inline => "cd share/units && ./all start", :privileged => true
+        config.vm.provision :shell, :inline => "cd /var/lib/apps/units && ./all start", :privileged => true
       end  
     end
   end
