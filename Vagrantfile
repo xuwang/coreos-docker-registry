@@ -35,9 +35,9 @@ Vagrant.configure("2") do |config|
   config.vm.box_version = ">= 308.0.1"
   config.vm.box_url = "http://%s.release.core-os.net/amd64-usr/current/coreos_production_vagrant.json" % $update_channel
   
-  # Uncomment below to enable ssh agent fowarding and
+  # To enable ssh agent fowarding and
   # add vagrant insecure_private_key to ssh-agent for fleet ssh
-  # if you are using own private_keys vs the default vagrant's insecure_private_key,
+  # if you are using a different private_keys vs the default vagrant's insecure_private_key,
   # add them to ssh-agent: 
   #      ssh-add <your_cluster_private_key>
   config.ssh.forward_agent = true
@@ -60,9 +60,8 @@ Vagrant.configure("2") do |config|
   end
 
   (1..$num_instances).each do |i|
-    config.vm.define vm_name = "apps-%02d" % i do |config|
+    config.vm.define vm_name = "core-%02d" % i do |config|
       config.vm.hostname = vm_name
-      
 
       if $enable_serial_logging
         logdir = File.join(File.dirname(__FILE__), "log")
@@ -106,8 +105,7 @@ Vagrant.configure("2") do |config|
       ip = "#{ip_base}.#{i+100}"
       config.vm.network :private_network, ip: ip
 
-      # Uncomment below to enable NFS for sharing the host machine into the coreos-vagrant VM.
-      # This is not very reliable, at least on MacOS X, droping mount after sleep/wakeup
+      # enable NFS for sharing the host machine into the coreos-vagrant VM.
       config.vm.synced_folder ".", "/home/core/share", id: "core", :nfs => true, :mount_options => ['nolock,vers=3,udp']
       
       # The demo docker registry is using a self-signed certs for https://registery.docker.local.
@@ -116,7 +114,7 @@ Vagrant.configure("2") do |config|
       config.vm.provision :file, :source => "#{TEST_ROOT_CA_PATH}", :destination => "/tmp/XXX-Dockerage.pem"
       config.vm.provision :shell, :inline => "cd /etc/ssl/certs && mv /tmp/XXX-Dockerage.pem . && update-ca-certificates", :privileged => true
 
-      # Uncomment below to enable ssh-agent forwarding in coreos-vagrant VM.
+      # enable ssh-agent forwarding in coreos-vagrant VM.
       config.vm.provision \
         :shell, \
         :inline => "echo -e 'Host #{ip_base}.* registry*\n  StrictHostKeyChecking no\n  ForwardAgent yes' > .ssh/config; chmod 600 .ssh/config", \
@@ -127,8 +125,11 @@ Vagrant.configure("2") do |config|
         config.vm.provision :shell, :inline => "mv /tmp/vagrantfile-user-data /var/lib/coreos-vagrant/", :privileged => true
       end 
 
+      # symlink apps and apps-data to /var/lib 
+      config.vm.provision :shell, :inline => "ln -sf /home/core/share/apps /var/lib/apps && ln -sf /home/core/share/data /var/lib/apps-data", :privileged => true
+
       if i == $num_instances
-        # fleetctl start registry related units, when all machine's up
+        # start all initial feet units, do it only on last node
         config.vm.provision :shell, :inline => "cd share/units && ./all start", :privileged => true
       end  
     end
