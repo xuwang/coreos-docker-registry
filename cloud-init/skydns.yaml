@@ -50,9 +50,8 @@ coreos:
               Type=oneshot
               RemainAfterExit=true
               EnvironmentFile=/var/lib/skydns/env
-              ExecStart=-/bin/mkdir -p ${SKYDNS_PATH}/bin
-              ExecStart=-/bin/cp /var/lib/apps/skydns/env ${SKYDNS_PATH}
-              ExecStart=/bin/sh -c "[ -x ${SKYDNS_CMD} ] || (curl -L -o ${SKYDNS_CMD} ${SKYDNS_CMD_REPO} && chmod 755 ${SKYDNS_CMD})" 
+              ExecStart=-/bin/mkdir -p ${SKYDNS_HOME}/bin
+              ExecStart=/usr/bin/bash -c "[ -x ${SKYDNS_CMD} ] || curl -L -o ${SKYDNS_CMD} ${SKYDNS_CMD_REPO} && chmod 755 ${SKYDNS_CMD}" 
         - name: skydns.service
           command: start
           content: |
@@ -75,24 +74,25 @@ coreos:
               ExecStartPre=/usr/bin/etcdctl set ${DOMAIN_PATH}/%H '{"host":"${COREOS_PRIVATE_IPV4}"}'
               # Set skydns configuration in etcd
               ExecStartPre=/usr/bin/etcdctl set /skydns/config ${SKYDNS_CONFIG}
-              ExecStart=/bin/sh -c ${SKYDNS_CMD}
+              ExecStart=/usr/bin/bash -c ${SKYDNS_CMD}
               ExecStopPost=-/usr/bin/etcdctl rm /skydns/config
               ExecStopPost=-/usr/bin/etcdctl rm ${DNS_NAMESERVER_PATH} --with-value '{host:${COREOS_PRIVATE_IPV4}}'
               ExecStopPost=-/usr/bin/etcdctl rm ${DOMAIN_PATH}/%H
-
+              
               [Install]  
               WantedBy=multi-user.target
 write_files:
   - path: /var/lib/skydns/env
+    permissions: 0644
+    owner: root
     content: |
         DOMAIN=docker.local
         DOMAIN_PATH=/skydns/local/docker
         DNS_NAMESERVER_PATH=/skydns/local/docker/dns/ns
         SKYDNS_CONFIG='{"domain":"docker.local", "dns_addr":"0.0.0.0:53", "ttl":3600, "nameservers": ["8.8.8.8:53","8.8.4.4:53"]}'
         SKYDNS_CMD_REPO=https://github.com/xuwang/skydns-docker/releases/download/skydns-7025dba3834f/skydns
-        SKYDNS_PATH=/var/lib/skydns
+        SKYDNS_HOME=/var/lib/skydns
         SKYDNS_CMD=/var/lib/skydns/bin/skydns
-
   - path: /etc/resolv.conf
     permissions: 0644
     owner: root

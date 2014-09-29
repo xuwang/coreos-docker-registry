@@ -7,8 +7,8 @@ RemainAfterExit=true
 EnvironmentFile=/etc/environment
 EnvironmentFile=/var/lib/apps/skydns/env
 ExecStart=-/bin/mkdir -p ${SKYDNS_PATH}/bin
-ExecStart=-/bin/cp /var/lib/apps/skydns/env ${SKYDNS_PATH}
-ExecStart=/bin/sh -c "[ -x ${SKYDNS_CMD} ] || (curl -L -o ${SKYDNS_CMD} ${SKYDNS_CMD_REPO} && chmod 755 ${SKYDNS_CMD})" 
+ExecStart=-/usr/bin/bash /var/lib/apps/skydns/env ${SKYDNS_PATH}
+ExecStart=/usr/bin/bash -c "[ -x ${SKYDNS_CMD} ] || (curl -L -o ${SKYDNS_CMD} ${SKYDNS_CMD_REPO} && chmod 755 ${SKYDNS_CMD})" 
 
 [X-Fleet]
 Global=true

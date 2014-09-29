@@ -13,7 +13,7 @@ EnvironmentFile=/etc/environment
 EnvironmentFile=/var/lib/skydns/env
 PermissionsStartOnly=true
 # For DNS to work properly SkyDNS needs to tell peers its nameservers. i.e. ns=<private_ip>
-ExecStartPre=/usr/bin/sh -c "etcdctl get ${DNS_NAMESERVER_PATH} > /dev/null || etcdctl set ${DNS_NAMESERVER_PATH} {host:${COREOS_PRIVATE_IPV4}}"
+ExecStartPre=/usr/bin/bash -c "etcdctl get ${DNS_NAMESERVER_PATH} > /dev/null || etcdctl set ${DNS_NAMESERVER_PATH} {host:${COREOS_PRIVATE_IPV4}}"
 ExecStartPre=/usr/bin/etcdctl set ${DOMAIN_PATH}/%H '{"host":"${COREOS_PRIVATE_IPV4}"}'
 # Set skydns configuration in etcd
 ExecStartPre=/usr/bin/etcdctl set /skydns/config ${SKYDNS_CONFIG}

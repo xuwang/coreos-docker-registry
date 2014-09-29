@@ -50,9 +50,8 @@ coreos:
               Type=oneshot
               RemainAfterExit=true
               EnvironmentFile=/var/lib/skydns/env
-              ExecStart=-/bin/mkdir -p ${SKYDNS_PATH}/bin
-              ExecStart=-/bin/cp /var/lib/apps/skydns/env ${SKYDNS_PATH}
-              ExecStart=/bin/sh -c "[ -x ${SKYDNS_CMD} ] || (curl -L -o ${SKYDNS_CMD} ${SKYDNS_CMD_REPO} && chmod 755 ${SKYDNS_CMD})" 
+              ExecStart=-/bin/mkdir -p ${SKYDNS_HOME}/bin
+              ExecStart=/usr/bin/bash -c "[ -x ${SKYDNS_CMD} ] || curl -L -o ${SKYDNS_CMD} ${SKYDNS_CMD_REPO} && chmod 755 ${SKYDNS_CMD}" 
         - name: skydns.service
           command: start
           content: |
@@ -75,11 +74,11 @@ coreos:
               ExecStartPre=/usr/bin/etcdctl set ${DOMAIN_PATH}/%H '{"host":"${COREOS_PRIVATE_IPV4}"}'
               # Set skydns configuration in etcd
               ExecStartPre=/usr/bin/etcdctl set /skydns/config ${SKYDNS_CONFIG}
-              ExecStart=/bin/sh -c ${SKYDNS_CMD}
+              ExecStart=/usr/bin/bash -c ${SKYDNS_CMD}
               ExecStopPost=-/usr/bin/etcdctl rm /skydns/config
               ExecStopPost=-/usr/bin/etcdctl rm ${DNS_NAMESERVER_PATH} --with-value '{host:${COREOS_PRIVATE_IPV4}}'
               ExecStopPost=-/usr/bin/etcdctl rm ${DOMAIN_PATH}/%H
-
+              
               [Install]  
               WantedBy=multi-user.target
               
@@ -87,44 +86,31 @@ coreos:
           command: start
           content: |
               [Unit]
-              Description=Confd Installer
+              Description=confd installer
               
               [Service]
               Type=oneshot
               RemainAfterExit=true
-              ExecStart=-/usr/bin/bash -c "mkdir -p /var/lib/confd/{bin,conf.d,templates}"
-              ExecStart=-/usr/bin/curl -L -o /var/lib/confd/bin/confd \
-                   https://github.com/kelseyhightower/confd/releases/download/v0.5.0/confd-0.5.0-linux-amd64
-              ExecStartPost=/usr/bin/chmod 755 /var/lib/confd/bin/confd 
               
-              [Install]  
-              WantedBy=multi-user.target
-        - name: confd.service
-          command: start
-          content: |    
-              [Unit]
-              Description=confd
-              Requires=confd-install.service
-              After=confd-install.service
-              Wants=etcd.service
-              After=etcd.service
-              
-              [Service]
-              ExecStart=/var/lib/confd/bin/confd -interval=30 -node "127.0.0.1:4001" -confdir /var/lib/confd
-              RestartSec=5
-              Restart=always
+              EnvironmentFile=/etc/environment
+              EnvironmentFile=/var/lib/confd/env
+              ExecStart=-/usr/bin/bash -c "[ -e ${CONFD_CMD} ] || mkdir -p ${CONFD_HOME}/{bin,conf.d,templates}"
+              ExecStart=/usr/bin/bash -c "[ -x ${CONFD_CMD} ] || curl -L -o ${CONFD_CMD} ${CONFD_CMD_REPO} && chmod 755 ${CONFD_CMD}" 
+              ExecStart=/usr/bin/chmod 755 ${CONFD_CMD}
               
               [Install]  
               WantedBy=multi-user.target
 write_files:
   - path: /var/lib/skydns/env
+    permissions: 0644
+    owner: root
     content: |
         DOMAIN=docker.local
         DOMAIN_PATH=/skydns/local/docker
         DNS_NAMESERVER_PATH=/skydns/local/docker/dns/ns
         SKYDNS_CONFIG='{"domain":"docker.local", "dns_addr":"0.0.0.0:53", "ttl":3600, "nameservers": ["8.8.8.8:53","8.8.4.4:53"]}'
         SKYDNS_CMD_REPO=https://github.com/xuwang/skydns-docker/releases/download/skydns-7025dba3834f/skydns
-        SKYDNS_PATH=/var/lib/skydns
+        SKYDNS_HOME=/var/lib/skydns
         SKYDNS_CMD=/var/lib/skydns/bin/skydns
   - path: /etc/resolv.conf
     permissions: 0644
@@ -133,7 +119,22 @@ write_files:
       domain docker.local
       nameserver 127.0.0.1
       nameserver 8.8.8.8
+  - path: /var/lib/confd/env
+    permissions: 0644
+    owner: root
+    content: |      
+      # env file for confd
+      CONFD_HOME=/var/lib/confd      
+      CONFD_CMD=/var/lib/confd/bin/confd
+      CONFD_CMD_REPO=https://github.com/kelseyhightower/confd/releases/download/v0.5.0/confd-0.5.0-linux-amd64
+      CONFD_OPTS= --debug \
+              -verbose=true \
+              -interval=10 \
+              -node "127.0.0.1:4001" \
+              -confdir /var/lib/confd
   - path: /etc/profile.d/alias.sh
+    permissions: 0644
+    owner: root
     content: |
         alias lal="ls -al"
         alias ll="ls -l"
