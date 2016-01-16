@@ -24,7 +24,7 @@ coreos:
               # Use our own dns, instead of the host's.
               EnvironmentFile=/var/lib/skydns/env
               ExecStart=
-              ExecStart=/usr/bin/docker -d -s=btrfs -r=false -H fd:// --dns=$private_ipv4 --dns-search=${DOMAIN}
+              ExecStart=/usr/bin/docker daemon -r=false -H fd:// --dns=$private_ipv4 --dns-search=${DOMAIN}
         - name: docker-tcp.socket
           command: start
           enable: true
