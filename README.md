@@ -38,24 +38,31 @@ Output:
 	64 bytes from 172.17.8.101: icmp_seq=1 ttl=64 time=0.094 ms
 	64 bytes from 172.17.8.101: icmp_seq=2 ttl=64 time=0.032 ms
 
-Check if the serviec is protected with curl:
+Check if the service is protected with curl:
+      
+```
+core@core-01 ~ $ curl -D - https://registry.docker.local/v2/
+HTTP/1.1 401 Unauthorized
+Server: nginx/1.9.9
+Date: Sun, 17 Jan 2016 20:40:10 GMT
+Content-Type: text/html
+Content-Length: 194
+Connection: keep-alive
+WWW-Authenticate: Basic realm="Restricted"
+```
 
-	curl https://registry.docker.local
-Output:
-
-	<html>
-	<head><title>401 Authorization Required</title></head>
-	<body bgcolor="white">
-	<center><h1>401 Authorization Required</h1></center>
-	<hr><center>nginx/1.6.2</center>
-	</body>
-	</html>
 Curl with user credentials:
-
-	curl --user test:test https://registry.docker.local
-Output:
-
-	"docker-registry server (prod) (v0.8.1)"
+```
+core@core-01 ~ $ curl -D -  --user test:test https://registry.docker.local/v2/
+HTTP/1.1 200 OK
+Server: nginx/1.9.9
+Date: Sun, 17 Jan 2016 20:42:53 GMT
+Content-Type: application/json; charset=utf-8
+Content-Length: 2
+Connection: keep-alive
+Docker-Distribution-Api-Version: registry/2.0
+X-Content-Type-Options: nosniff
+```
 
 ### Push and pull images from the private docker registry
 Try pushing scratch to the private registry:
