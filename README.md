@@ -65,22 +65,22 @@ X-Content-Type-Options: nosniff
 ```
 
 ### Push and pull images from the private docker registry
-Try pushing scratch to the private registry:
+Try pushing busybox to the private registry:
 
-	docker pull scratch
-	myscratch='registry.docker.local/test/scratch'
-	docker tag scratch:latest $myscratch
-	docker push  $myscratch
+	docker pull busybox
+	mybusybox='registry.docker.local/test/busybox'
+	docker tag scratch:latest $mybusybox
+	docker push  $mybusybox
 Output:
 
-    The push refers to a repository [registry.docker.local/test/scratch] (len: 1)
+    The push refers to a repository [registry.docker.local/test/busybox] (len: 1)
     Sending image list
 
 Well, with docker 1.2.0, it fails pushing a image _without_ error warning. 
 
 Try to pull the image, the docker tells you what's the problem:
 
-    Pulling repository registry.docker.local/test/scratch
+    Pulling repository registry.docker.local/test/busybox
 Output:
 
     2014/09/24 23:49:38 Authentication is required.
@@ -98,15 +98,15 @@ _Note:_ For docker login/logout, the full url, e.g. _https://registry.docker.loc
 
 Push again:
 
-    docker push $myscratch
+    docker push $mybusybox
     
 Output:
 
-    The push refers to a repository [registry.docker.local/test/scratch] (len: 1)
+    The push refers to a repository [registry.docker.local/test/busybox] (len: 1)
     Sending image list
-    Pushing repository registry.docker.local/test/scratch (1 tags)
+    Pushing repository registry.docker.local/test/busybox (1 tags)
     ...
-    Pushing tag for rev [511136ea3c5a] on {https://registry.docker.local/v1/repositories/test/scratch/tags/latest}
+    Pushing tag for rev [511136ea3c5a] on {https://registry.docker.local/v1/repositories/test/busybox/tags/latest}
     
 Docker (1.2.0) _search_ is not working with basic auth.  
 Use the Docker Registry API call for search:
