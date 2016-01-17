@@ -69,7 +69,7 @@ Try pushing busybox to the private registry:
 
 	docker pull busybox
 	mybusybox='registry.docker.local/test/busybox'
-	docker tag scratch:latest $mybusybox
+	docker tag busybox:latest $mybusybox
 	docker push  $mybusybox
 Output:
 
