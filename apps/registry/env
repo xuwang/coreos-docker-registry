@@ -1,10 +1,9 @@
 # this is a unit env file for docker registry
 
-DOCKER_IMAGE='registry:latest'
+DOCKER_IMAGE='registry:2.2'
 DOCKER_OPTS=-p 5000:5000 \
     -v /var/lib/apps-data/registry:/data \
-    -v /var/lib/apps/registry:/registry-conf \
-    -e DOCKER_REGISTRY_CONFIG=/registry-conf/config.yml -e SETTINGS_FLAVOR=prod
+    -v /var/lib/apps/registry/config.yml:/etc/docker/registry/config.yml
     
 REGISTRY_PORT=5000
     
