@@ -108,10 +108,6 @@ Output:
     ...
     Pushing tag for rev [511136ea3c5a] on {https://registry.docker.local/v1/repositories/test/busybox/tags/latest}
     
-Docker (1.2.0) _search_ is not working with basic auth.  
-Use the Docker Registry API call for search:
-
-        curl --user test:test -s -XGET "https://registry.docker.local/v1/search?q=test
 ### Clean it up
 
 	exit # the coreos vm
