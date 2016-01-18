@@ -65,7 +65,7 @@ X-Content-Type-Options: nosniff
 ```
 
 ### Push and pull images from the private docker registry
-Try pushing busybox to the private registry:
+Try pushing busybox to the private registry, without authentication:
 
 	docker pull busybox
 	mybusybox='registry.docker.local/test/busybox'
@@ -74,28 +74,18 @@ Try pushing busybox to the private registry:
 Output:
 
     The push refers to a repository [registry.docker.local/test/busybox] (len: 1)
-    Sending image list
-
-Well, with docker 1.2.0, it fails pushing a image _without_ error warning. 
-
-Try to pull the image, the docker tells you what's the problem:
-
-    Pulling repository registry.docker.local/test/busybox
-Output:
-
-    2014/09/24 23:49:38 Authentication is required.
+    b175bcb79023: Image push failed
+    Head https://registry.docker.local/v2/test/busybox/blobs/sha256:a3ed95caeb02ffe68cdd9fd84406680ae93d633cb16422d00e8a7c22955b46d4:     no basic auth credentials
+    
 Do login and try again:
 
-	docker login https://registry.docker.local
-	Username: test
-	Password: test
-	Email:
+    docker login -u test -p test -e test@example.com https://registry.docker.local
+	
 Output:
 
-	Login Succeeded
+    WARNING: login credentials saved in /home/core/.docker/config.json
+    Login Succeeded
  
-_Note:_ For docker login/logout, the full url, e.g. _https://registry.docker.local_ is required.  
-
 Push again:
 
     docker push $mybusybox
