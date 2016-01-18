@@ -2,6 +2,11 @@
 
 An example of setting up a private [skydns][SkyDNS] and [docker registry][Docker-Registry] on [CoreOS][using-coreos] with VirtualBox and Vagrant.
 
+This example starts 2 docker containers:
+
+* Registry v2, registered with Skydns as _registry.service_
+* Nginx as a basic auth Registry proxy, with Skydns name _registry.docker.local_
+
 ### Install dependencies
 
 * [VirtualBox][virtualbox] 4.3.10 or greater.
@@ -31,7 +36,9 @@ Output:
        ...
 Wait until dots turn green, try:
 
-	ping -c 2 registry.docker.local    # see if the service is registed
+	ping -c 2 registry.docker.local    # see if the proxy is running
+	ping -c 2 registry.service         # see if the proxy upstream registry service is registered
+	
 Output:
 
 	PING registry.docker.local (172.17.8.101) 56(84) bytes of data.
