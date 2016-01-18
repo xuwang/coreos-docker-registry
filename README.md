@@ -88,15 +88,11 @@ Output:
  
 Push again:
 
-    docker push $mybusybox
-    
-Output:
-
+    core@core-01 ~ $ docker push $mybusybox
     The push refers to a repository [registry.docker.local/test/busybox] (len: 1)
-    Sending image list
-    Pushing repository registry.docker.local/test/busybox (1 tags)
-    ...
-    Pushing tag for rev [511136ea3c5a] on {https://registry.docker.local/v1/repositories/test/busybox/tags/latest}
+    b175bcb79023: Pushed
+    583635769552: Pushed
+    latest: digest: sha256:caaa1b651f40a420b45c937a2033c28774dfba966caea8d2b77500615be97858 size: 2740
     
 ### Clean it up
 
