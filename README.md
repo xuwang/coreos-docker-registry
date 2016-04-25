@@ -71,6 +71,12 @@ Docker-Distribution-Api-Version: registry/2.0
 X-Content-Type-Options: nosniff
 ```
 
+__Note:__ Because the regsitry is using a self-signed certificate, curl the registry from the host machine, you will need to use "-k" option:
+
+```
+$ curl -k -D - --user test:test https://172.17.8.101/v2/
+```
+
 ### Push and pull images from the private docker registry
 Try pushing busybox to the private registry, without authentication:
 
